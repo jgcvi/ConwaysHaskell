@@ -2,10 +2,6 @@ val :: Board
 val = [[Alive, Alive], [Alive, Dead]]
 val2 = [[Alive, Dead, Alive], [Dead, Alive, Dead], [Alive,Dead,Alive]]
 
---a d a	d a d
---d a d	a d a
---a d a	d a d
-
 data Cell = Dead | Alive
 	deriving (Show, Eq)
 type Board = [[Cell]]
