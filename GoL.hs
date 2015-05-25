@@ -1,9 +1,10 @@
-val :: Board
+module GoL where
+import System.IO
+
 val = [[Alive, Alive], [Alive, Dead]]
 val2 = [[Alive, Dead, Alive], [Dead, Alive, Dead], [Alive,Dead,Alive]]
 
-data Cell = Dead | Alive
-	deriving (Show, Eq)
+data Cell = Dead | Alive deriving (Show, Eq)
 type Board = [[Cell]]
 
 makeMove :: Board -> Board
@@ -13,7 +14,7 @@ intBoardToBoard :: [[(Int, Cell)]] -> Board
 intBoardToBoard = map (\x -> map intToCell x)
 
 intToCell :: (Int, Cell) -> Cell
-intToCell y@(x,c)
+intToCell (x,c)
 	| x == 2 && c == Alive = Alive
 	| x == 3 = Alive
 	| otherwise = Dead
@@ -25,24 +26,25 @@ prepareForMove y board = [convertToNeighborCounts 0 y (head $ drop y board) boar
 		| otherwise = prepareForMove (y+1) board
 
 getNeighbors :: Int -> Int -> Board -> [Cell]
-getNeighbors x y board = xReduced `yReduce` y where
+getNeighbors x y board@(h:t) = xReduced `yReduce` y where
 	xReduced
-		| x == 0 = [head board, head $ tail board]
-		| x == (length board) - 1 = [last $ init board, last board]
+		| x == 0 = [h, head t]
+		| x + 1 == length board = [last $ init board, last board]
 		| otherwise = take 3 $ drop (x-1) board
 
 yReduce :: Board -> Int -> [Cell]
 yReduce board y = concat reduced where
+	fn = map (drop (y -1))
 	reduced
 		| y == 0 = map (take 2) board
-		| y == (length board - 1) = map (drop (y - 1)) board
-		| otherwise = map (take 3) $ map (drop (y - 1)) board
+		| y + 1== length board = fn board
+		| otherwise = map (take 3) $ fn board
 
 convertToNeighborCounts :: Int -> Int -> [Cell] -> Board -> [(Int, Cell)]
-convertToNeighborCounts x y row board = (:) ((getNeighborCount x y board, head row)) rest where
+convertToNeighborCounts x y row@(h:t) board = (:) ((getNeighborCount x y board, h)) rest where
 	rest
 		| x + 1 == length board = []
-		| otherwise = convertToNeighborCounts (x+1) y (tail row) board
+		| otherwise = convertToNeighborCounts (x+1) y t board
 
 getNeighborCount :: Int -> Int -> Board -> Int
 getNeighborCount x y board = (length $ filter (== Alive) (getNeighbors x y board)) - val
